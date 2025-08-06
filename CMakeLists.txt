@@ -42,7 +42,13 @@ else()
     endif()
 endif()
 
-target_link_libraries(PdfEditor PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+include_directories(/usr/include/poppler/qt6)
+link_directories(/usr/lib/x86_64-linux-gnu)
+
+target_link_libraries(PdfEditor PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+    poppler-qt${QT_VERSION_MAJOR}
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
