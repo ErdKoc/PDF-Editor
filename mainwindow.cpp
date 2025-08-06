@@ -7,6 +7,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     loadDirectoryContent();
+
+    QObject::connect(ui->listWidget, &QListWidget::itemClicked,
+                     this, &MainWindow::stateCheck);
 }
 
 MainWindow::~MainWindow()
@@ -22,6 +25,14 @@ void MainWindow::loadDirectoryContent() {
         qDebug() << item->text();
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(Qt::Unchecked);
+        state_map[item->text()] = item->checkState();
         ui->listWidget->addItem(item);
+    }
+}
+
+void MainWindow::stateCheck(QListWidgetItem *item) {
+    if(item->checkState() != state_map.value(item->text())) {
+        state_map[item->text()] = item->checkState();
+        emit checkboxChecked();
     }
 }
