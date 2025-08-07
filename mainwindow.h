@@ -26,17 +26,18 @@ public slots:
     void stateCheck(QListWidgetItem *Item);
     void addToViewedItemList(Qt::CheckState state,
                              const QString &document_name);
-    void loadDocumentIntoView();
 
 signals:
     void checkboxStateChanged(Qt::CheckState state, const QString &document_name);
 
 private:
+    void updateGraphicsViewScene();
     void loadDirectoryContent();
     QListWidgetItem* formatItemToCheckable(const QString &entry);
 
     Ui::MainWindow *ui;
-    QHash<QString, Qt::CheckState> state_map_;
+    QMap<QString, Qt::CheckState> directory_state_map_;
+    QMap<QString, QImage> viewed_doc_;
     QDir dir_ = QDir("/home/user/Arbeitsunterlagen");
 };
 #endif // MAINWINDOW_H
