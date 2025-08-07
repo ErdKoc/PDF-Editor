@@ -5,6 +5,8 @@
 #include <QMap>
 #include <QDir>
 
+#include "poppler-qt6.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -22,14 +24,19 @@ public:
 
 public slots:
     void stateCheck(QListWidgetItem *Item);
+    void addToViewedItemList(Qt::CheckState state,
+                             const QString &document_name);
+    void loadDocumentIntoView();
 
 signals:
-    void checkboxChecked();
+    void checkboxStateChanged(Qt::CheckState state, const QString &document_name);
 
 private:
     void loadDirectoryContent();
+    QListWidgetItem* formatItemToCheckable(const QString &entry);
 
     Ui::MainWindow *ui;
-    QMap<QString, Qt::CheckState> state_map;
+    QHash<QString, Qt::CheckState> state_map_;
+    QDir dir_ = QDir("/home/user/Arbeitsunterlagen");
 };
 #endif // MAINWINDOW_H
