@@ -55,6 +55,7 @@ void MainWindow::addToViewedItemList(Qt::CheckState state, const QString &docume
 
                 QImage image = page->renderToImage();
                 viewed_doc_.insert(hash_name,image);
+                order_of_display_.append(hash_name);
                 page.reset();
 
                 QListWidgetItem *listItem = formatItemToCheckable(hash_name);
@@ -67,8 +68,10 @@ void MainWindow::addToViewedItemList(Qt::CheckState state, const QString &docume
                                                                               Qt::MatchStartsWith);
         for(int i=0; i<itemList.count(); i++) {
             if(viewed_doc_.find(itemList[i]->text()) != viewed_doc_.end()) {
-                QMap<QString, QImage>::iterator foundItem =
+                QHash<QString, QImage>::iterator foundItem =
                     viewed_doc_.find(itemList[i]->text());
+                int index_of_searched_item = order_of_display_.indexOf(itemList[i]->text());
+                order_of_display_.remove(index_of_searched_item);
                 viewed_doc_.erase(foundItem);
             } else {
                 qWarning() << "Not found!";
@@ -85,11 +88,12 @@ void MainWindow::updateGraphicsViewScene() {
     delete ui->graphicsView->scene();
     qreal yPos = 0;
     QGraphicsScene *scene = new QGraphicsScene();
-    QMap<QString, QImage>::const_iterator i = viewed_doc_.constBegin();
-    while(i != viewed_doc_.constEnd()) {
-        QGraphicsPixmapItem *item = scene->addPixmap(QPixmap::fromImage(i.value()));
+    QList<QString>::const_iterator i = order_of_display_.constBegin();
+    while(i != order_of_display_.constEnd()) {
+        QImage image = viewed_doc_.value(*i);
+        QGraphicsPixmapItem *item = scene->addPixmap(QPixmap::fromImage(image));
         item->setPos(0, yPos);
-        yPos += i.value().height();
+        yPos += image.height();
         ++i;
     }
     ui->graphicsView->setScene(scene);

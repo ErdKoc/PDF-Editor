@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QMap>
 #include <QDir>
 
 #include "poppler-qt6.h"
@@ -36,8 +35,9 @@ private:
     QListWidgetItem* formatItemToCheckable(const QString &entry);
 
     Ui::MainWindow *ui;
-    QMap<QString, Qt::CheckState> directory_state_map_;
-    QMap<QString, QImage> viewed_doc_;
+    QHash<QString, Qt::CheckState> directory_state_map_;
+    QHash<QString, QImage> viewed_doc_;
+    QList<QString> order_of_display_;
     QDir dir_ = QDir("/home/user/Arbeitsunterlagen");
 };
 #endif // MAINWINDOW_H
