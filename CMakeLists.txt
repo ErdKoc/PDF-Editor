@@ -12,6 +12,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
+find_package(PoDoFo REQUIRED)
+include_directories(${PoDoFo_INCLUDE_DIRS})
+
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
@@ -48,6 +51,7 @@ link_directories(/usr/lib/x86_64-linux-gnu)
 target_link_libraries(PdfEditor PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     poppler-qt${QT_VERSION_MAJOR}
+    ${PoDoFo_LIBRARIES}
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
