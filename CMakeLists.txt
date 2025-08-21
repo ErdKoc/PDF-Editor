@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(PdfEditor VERSION 0.1 LANGUAGES CXX)
 
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+# set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -15,8 +15,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-find_package(PoDoFo REQUIRED)
-include_directories(${PoDoFo_INCLUDE_DIRS})
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PoDoFo REQUIRED libpodofo)
+pkg_check_modules(PopplerQt${QT_VERSION_MAJOR} REQUIRED poppler-qt${QT_VERSION_MAJOR})
 
 set(PROJECT_SOURCES
         main.cpp
@@ -30,6 +31,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
+
+target_include_directories(PdfEditor PRIVATE
+    ${PoDoFo_INCLUDE_DIRS}
+    ${PopplerQt${QT_VERSION_MAJOR}_INCLUDE_DIRS}
+)
+
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET PdfEditor APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
@@ -48,12 +55,11 @@ else()
     endif()
 endif()
 
-include_directories(/usr/include/poppler/qt6)
 link_directories(/usr/lib/x86_64-linux-gnu)
 
 target_link_libraries(PdfEditor PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
-    poppler-qt${QT_VERSION_MAJOR}
+    ${PopplerQt${QT_VERSION_MAJOR}_LIBRARIES}
     ${PoDoFo_LIBRARIES}
 )
 

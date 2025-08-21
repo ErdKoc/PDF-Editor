@@ -4,8 +4,8 @@
 #include <QMainWindow>
 #include <QDir>
 
-#include "poppler-qt6.h"
-#include "podofo/podofo.h"
+#include <poppler-qt6.h>
+#include <podofo/podofo.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
