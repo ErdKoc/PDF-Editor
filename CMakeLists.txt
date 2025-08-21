@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.16)
 
 project(PdfEditor VERSION 0.1 LANGUAGES CXX)
 
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)

@@ -31,7 +31,17 @@
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QGraphicsView" name="graphicsView"/>
+     <widget class="QGraphicsView" name="graphicsView">
+      <property name="backgroundBrush">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>220</red>
+         <green>220</green>
+         <blue>220</blue>
+        </color>
+       </brush>
+      </property>
+     </widget>
     </item>
     <item row="0" column="2">
      <layout class="QVBoxLayout" name="verticalLayout">
@@ -42,6 +52,21 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="saveButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Save</string>
         </property>
        </widget>
       </item>

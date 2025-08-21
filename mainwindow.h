@@ -5,6 +5,7 @@
 #include <QDir>
 
 #include "poppler-qt6.h"
+#include "podofo/podofo.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -25,6 +26,7 @@ public slots:
     void stateCheck(QListWidgetItem *Item);
     void addToViewedItemList(Qt::CheckState state,
                              const QString &document_name);
+    void saveDocToCurDir();
 
 signals:
     void checkboxStateChanged(Qt::CheckState state, const QString &document_name);
@@ -32,6 +34,7 @@ signals:
 private:
     void updateGraphicsViewScene();
     void loadDirectoryContent();
+    std::tuple<QString, int> splitItemName(const QListWidgetItem *item);
     QListWidgetItem* formatItemToCheckable(const QString &entry);
 
     Ui::MainWindow *ui;
