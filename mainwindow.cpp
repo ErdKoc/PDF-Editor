@@ -2,6 +2,7 @@
 #include "./ui_mainwindow.h"
 
 #include <QGraphicsPixmapItem>
+#include <QInputDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -83,9 +84,43 @@ void MainWindow::addToViewedItemList(Qt::CheckState state, const QString &docume
 }
 
 void MainWindow::saveDocToCurDir() {
+    PoDoFo::PdfMemDocument inputDoc, outputDoc;
+    QString file_name;
     for (int i=0; i < ui->viewedDocListWidget->count(); i++) {
         std::tuple<QString, int> doc_info = splitItemName(ui->viewedDocListWidget->item(i));
-        qDebug() << "first: " << std::get<0>(doc_info) << "/ second: " << std::get<1>(doc_info);
+
+        try {
+            if (file_name != std::get<0>(doc_info)) {
+                inputDoc.Reset();
+                QString fileDir = dir_.path() + "/" + std::get<0>(doc_info);
+                inputDoc.Load(fileDir.toStdString());
+                file_name = std::get<0>(doc_info);
+            }
+
+            try {
+                outputDoc.GetPages().AppendDocumentPages(inputDoc, std::get<1>(doc_info), 1);
+                qDebug() << "outputDoc GetPages(): " << outputDoc.GetPages().GetCount();
+            }
+            catch (const PoDoFo::PdfError &e) {
+                qDebug() << "Fehler beim Kopieren der Seite: " << e.what();
+            }
+        }
+        catch (const PoDoFo::PdfError &e) {
+            qDebug() << "Error: " << e.what();
+        }
+    }
+
+    bool ok{};
+    QString save_name = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+                                              tr("Save as ..."), QLineEdit::Normal,
+                                              QDir::home().dirName(), &ok);
+
+    if (ok && !save_name.isEmpty()) {
+        if (!save_name.contains(".pdf")) {
+            save_name = save_name + ".pdf";
+        }
+
+        outputDoc.Save(QString(dir_.path() + "/" + save_name).toStdString());
     }
 }
 
