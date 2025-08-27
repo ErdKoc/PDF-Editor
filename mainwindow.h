@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QDir>
+#include <QFileSystemWatcher>
 
 #include <poppler-qt6.h>
 #include <podofo/podofo.h>
@@ -27,6 +28,8 @@ public slots:
     void addToViewedItemList(Qt::CheckState state,
                              const QString &document_name);
     void saveDocToCurDir();
+    void saveCheckedToCurDir();
+    void reloadDirectoryContent();
 
 signals:
     void checkboxStateChanged(Qt::CheckState state, const QString &document_name);
@@ -38,6 +41,7 @@ private:
     QListWidgetItem* formatItemToCheckable(const QString &entry);
 
     Ui::MainWindow *ui;
+    QFileSystemWatcher *watcher;
     QHash<QString, Qt::CheckState> directory_state_map_;
     QHash<QString, QImage> viewed_doc_;
     QList<QString> order_of_display_;

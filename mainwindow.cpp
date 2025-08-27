@@ -7,16 +7,22 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , watcher(new QFileSystemWatcher(this))
 {
     ui->setupUi(this);
     loadDirectoryContent();
+    watcher->addPath(dir_.path());
 
+    QObject::connect(watcher, &QFileSystemWatcher::directoryChanged,
+                     this, &MainWindow::reloadDirectoryContent);
     QObject::connect(ui->dirContentListWidget, &QListWidget::itemClicked,
                      this, &MainWindow::stateCheck);
     QObject::connect(this, &MainWindow::checkboxStateChanged,
                      this, &MainWindow::addToViewedItemList);
     QObject::connect(ui->saveButton, &QPushButton::clicked,
                      this, &MainWindow::saveDocToCurDir);
+    QObject::connect(ui->splitButton, &QPushButton::clicked,
+                     this, &MainWindow::saveCheckedToCurDir);
 }
 
 MainWindow::~MainWindow()
@@ -50,13 +56,11 @@ void MainWindow::addToViewedItemList(Qt::CheckState state, const QString &docume
                 QImage image = page->renderToImage();
                 viewed_doc_.insert(hash_name,image);
                 order_of_display_.append(hash_name);
-                page.reset();
 
                 QListWidgetItem *listItem = formatItemToCheckable(hash_name);
                 ui->viewedDocListWidget->addItem(listItem);
             }
         }
-        doc.reset();
     } else {
         QList<QListWidgetItem*> itemList = ui->viewedDocListWidget->findItems(QString(document_name),
                                                                               Qt::MatchStartsWith);
@@ -75,9 +79,11 @@ void MainWindow::addToViewedItemList(Qt::CheckState state, const QString &docume
         }
     }
 
-    if((ui->viewedDocListWidget->count() > 0) || (not ui->saveButton->isEnabled())) {
+    if((ui->viewedDocListWidget->count() > 0) || (not ui->saveButton->isEnabled()) || (not ui->splitButton->isEnabled())) {
+        ui->splitButton->setEnabled(true);
         ui->saveButton->setEnabled(true);
     } else {
+        ui->splitButton->setEnabled(false);
         ui->saveButton->setEnabled(false);
     }
     updateGraphicsViewScene();
@@ -124,8 +130,86 @@ void MainWindow::saveDocToCurDir() {
     }
 }
 
+void MainWindow::saveCheckedToCurDir() {
+    PoDoFo::PdfMemDocument inputDoc, outputDoc;
+    QString file_name;
+    for (int i=0; i < ui->viewedDocListWidget->count(); i++) {
+        if (not ui->viewedDocListWidget->item(i)->checkState()) {
+            continue;
+        }
+
+        std::tuple<QString, int> doc_info = splitItemName(ui->viewedDocListWidget->item(i));
+
+        try {
+            if (file_name != std::get<0>(doc_info)) {
+                inputDoc.Reset();
+                QString fileDir = dir_.path() + "/" + std::get<0>(doc_info);
+                inputDoc.Load(fileDir.toStdString());
+                file_name = std::get<0>(doc_info);
+            }
+
+            try {
+                outputDoc.GetPages().AppendDocumentPages(inputDoc, std::get<1>(doc_info), 1);
+            }
+            catch (const PoDoFo::PdfError &e) {
+                qDebug() << "Fehler beim Kopieren der Seite: " << e.what();
+            }
+        }
+        catch (const PoDoFo::PdfError &e) {
+            qDebug() << "Error: " << e.what();
+        }
+    }
+
+    bool ok{};
+    QString save_name = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+                                              tr("Save as ..."), QLineEdit::Normal,
+                                              QDir::home().dirName(), &ok);
+
+    if (ok && !save_name.isEmpty()) {
+        if (!save_name.contains(".pdf")) {
+            save_name = save_name + ".pdf";
+        }
+
+        outputDoc.Save(QString(dir_.path() + "/" + save_name).toStdString());
+    }
+}
+
+void MainWindow::reloadDirectoryContent() {
+    const QStringList &const_entry_list = dir_.entryList(QStringList() << "*.pdf");
+    QSet<QString> old_content_in_widget;
+    for (int i=0; i<ui->dirContentListWidget->count(); i++) {
+        old_content_in_widget.insert(ui->dirContentListWidget->item(i)->text());
+    }
+
+
+    if (const_entry_list.count() < old_content_in_widget.count()) {
+        // Element was deleted from directory but not from the listWidget
+        for (int i= ui->dirContentListWidget->count()-1; i>=0; i--) {
+            QListWidgetItem *item = ui->dirContentListWidget->item(i);
+            if(!const_entry_list.contains(item->text())) {
+                directory_state_map_.remove(item->text());
+                delete ui->dirContentListWidget->takeItem(i);
+            }
+        }
+    }
+    else if (const_entry_list.count() > old_content_in_widget.count()) {
+        // New element was added but currently not in the listWidget
+        for (const QString &entry : const_entry_list) {
+            if (!old_content_in_widget.contains(entry)) {
+                QListWidgetItem *item = formatItemToCheckable(entry);
+                directory_state_map_.insert(item->text(), item->checkState());
+                ui->dirContentListWidget->addItem(item);
+            }
+        }
+    }
+}
+
 void MainWindow::updateGraphicsViewScene() {
-    delete ui->graphicsView->scene();
+    QGraphicsScene *old_scene = ui->graphicsView->scene();
+    if(old_scene) {
+        old_scene->clear();
+        delete old_scene;
+    }
     qreal yPos = 0;
     QGraphicsScene *scene = new QGraphicsScene();
     QList<QString>::const_iterator i = order_of_display_.constBegin();
@@ -133,6 +217,14 @@ void MainWindow::updateGraphicsViewScene() {
         QImage image = viewed_doc_.value(*i);
         QGraphicsPixmapItem *item = scene->addPixmap(QPixmap::fromImage(image));
         item->setPos(0, yPos);
+
+        QGraphicsTextItem *textItem = scene->addText(*i);
+        QFont font = textItem->font();
+        font.setPixelSize(20);
+        textItem->setFont(font);
+        textItem->setPos(10, yPos + 10);
+        textItem->setDefaultTextColor(Qt::red);
+
         yPos += image.height() + 5;
         ++i;
     }

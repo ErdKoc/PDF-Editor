@@ -61,6 +61,16 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="splitButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Split</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="saveButton">
         <property name="enabled">
          <bool>false</bool>
