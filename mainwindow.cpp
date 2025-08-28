@@ -205,11 +205,8 @@ void MainWindow::reloadDirectoryContent() {
 }
 
 void MainWindow::updateGraphicsViewScene() {
-    QGraphicsScene *old_scene = ui->graphicsView->scene();
-    if(old_scene) {
-        old_scene->clear();
-        delete old_scene;
-    }
+    delete ui->graphicsView->scene();
+
     qreal yPos = 0;
     QGraphicsScene *scene = new QGraphicsScene();
     QList<QString>::const_iterator i = order_of_display_.constBegin();
