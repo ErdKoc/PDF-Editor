@@ -45,6 +45,7 @@ private:
     QHash<QString, Qt::CheckState> directory_state_map_;
     QHash<QString, QImage> viewed_doc_;
     QList<QString> order_of_display_;
-    QDir dir_ = QDir("/home/user/Arbeitsunterlagen");
+    // QDir dir_ = QDir("/home/user/Arbeitsunterlagen");
+    QDir dir_;
 };
 #endif // MAINWINDOW_H

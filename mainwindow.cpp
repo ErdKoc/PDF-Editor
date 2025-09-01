@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , watcher(new QFileSystemWatcher(this))
+    , dir_(QDir::current())
 {
     ui->setupUi(this);
     loadDirectoryContent();
